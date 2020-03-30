@@ -51,11 +51,11 @@ public class TinySETokenizer implements Tokenizer {
 	}
 
 	public static void main(String[] args){
-		TinySETokenizer yo = new TinySETokenizer();
+		TinySETokenizer tokenizer = new TinySETokenizer();
 		String text = "  He likes fried chicken keeping going went checked checking mapped mapping U.S.A USA  ACTIII III.III U.S.A state-of-the-art   ";
 		String text2 = "i am a boy we are students analyzer analyzing analyzation";
-		yo.setup();
-		List<String> yoyo = yo.split(text2);
-		System.out.println(yoyo);
+		tokenizer.setup();
+		List<String> result = tokenizer.split(text2);
+		System.out.println(result);
 	}
 }
