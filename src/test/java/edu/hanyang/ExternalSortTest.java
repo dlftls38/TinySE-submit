@@ -24,7 +24,7 @@ public class ExternalSortTest {
 			resultFile.delete();
 		}
 	}
-	
+
 	@Test
 	public void TestSort() throws IOException {
 		int blocksize = 1024;
@@ -34,21 +34,21 @@ public class ExternalSortTest {
 		String outfile = "./tmp/sorted.data";
 		String tmpdir = "./tmp";
 		File resultFile = new File(outfile);
-		
+
 		TinySEExternalSort sort = new TinySEExternalSort();
 		long timestamp = System.currentTimeMillis();
 		sort.sort(infile.getAbsolutePath(), outfile, tmpdir, blocksize, nblocks);
 		System.out.println("time duration: " + (System.currentTimeMillis() - timestamp) + " msecs with " + nblocks + " blocks of size " + blocksize + " bytes");
 
-		
-		File answerFile = new File(classLoader.getResource("answer.data").getFile()); //utf
+
+		File answerFile = new File(classLoader.getResource("answer.data").getFile());
 		DataInputStream resultInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(resultFile)));
 		DataInputStream answerInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(answerFile)));
 
 		assertNotNull(resultInputStream);
 		assertNotNull(answerInputStream);
 
-		for (int i = 0; i < 100000; i++) { //try catch
+		for (int i = 0; i < 100000; i++) {
 			assertEquals(resultInputStream.readInt(), answerInputStream.readInt());
 			assertEquals(resultInputStream.readInt(), answerInputStream.readInt());
 			assertEquals(resultInputStream.readInt(), answerInputStream.readInt());
