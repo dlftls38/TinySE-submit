@@ -16,7 +16,7 @@ public class TinySEExternalSort implements ExternalSort {
         DataInputStream dataInputStream = new DataInputStream(
                 new BufferedInputStream(
                         new FileInputStream(input_path), 1024)
-                );
+        );
         for(int i=0;i<15;i++){
             System.out.print(i + ": (");
             for(int j=0;j<3;j++){
@@ -148,7 +148,6 @@ public class TinySEExternalSort implements ExternalSort {
             //initial run 생성하기
             fileInitialRun.createNewFile();
             dm.openDos(initial_run, blocksize);
-
             for (MutableTriple<Integer, Integer, Integer> curData : dataArr) {
                 try{
                     dm.writeNext(curData);
@@ -156,7 +155,7 @@ public class TinySEExternalSort implements ExternalSort {
                     break;
                 }
             }
-
+            number_of_initial_run++;
             dm.closeDos();
         }
         // File cursor 닫기
@@ -201,10 +200,10 @@ public class TinySEExternalSort implements ExternalSort {
     public void n_way_merge(List<DataInputStream> files, String outputFile) throws IOException {
         PriorityQueue<DataManager> queue = new PriorityQueue<>
                 (files.size(), new Comparator<DataManager>() {
-            public int compare(DataManager o1, DataManager o2) {
-                return o1.tuple.compareTo(o2.tuple);
-            }
-        });
+                    public int compare(DataManager o1, DataManager o2) {
+                        return o1.tuple.compareTo(o2.tuple);
+                    }
+                });
         while (queue.size() != 0){
             DataManager dm = queue.poll();
 //            MutableTriple<Integer, Integer, Integer> tmp = dm.getTuple();
