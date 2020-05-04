@@ -170,17 +170,13 @@ public class TinySEExternalSort implements ExternalSort {
         // initial run 생성해서 quick sort 정렬까지 완료! 2) n-way merge만 구현하면 됨!
 
         // 2) n-way merge
-//        _externalMergeSort(tmpdir, outfile, 0);
+        _externalMergeSort(tmpDir, outfile, nblocks, blocksize, 0);
     }
 
-    private void _externalMergeSort(String tmpDir, String outputFile, int step) throws IOException{
+    private void _externalMergeSort(String tmpDir, String outputFile, int nblocks, int blocksize, int step) throws IOException{
         String prevStep = "";
         File[] fileArr = (new File(tmpDir + File.separator + String.valueOf(prevStep))).listFiles();
 
-        //임시로 설정
-        int nblocks=0;
-        int blocksize=0;
-        int cnt=0;
 
         if(fileArr.length <= nblocks - 1){
             for(File f: fileArr){
@@ -191,17 +187,23 @@ public class TinySEExternalSort implements ExternalSort {
             }
         }
         else{
+        	int cnt=0;
+        	List<DataInputStream> files = new ArrayList<DataInputStream>();
             for(File f: fileArr){
+            	DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(f.getAbsolutePath()), blocksize));
+            	files.add(dataInputStream);
                 cnt++;
                 if(cnt == nblocks -1){
-//                    n_way_merge(f, outputFile);
+                    n_way_merge(files, outputFile, blocksize);
+                    cnt=0;
+                    files = new ArrayList<DataInputStream>();
                 }
             }
-            _externalMergeSort(tmpDir, outputFile, step+1);
+            _externalMergeSort(tmpDir, outputFile, nblocks, blocksize, step+1);
         }
     }
 
-    public void n_way_merge(List<DataInputStream> files, String outputFile) throws IOException {
+    public void n_way_merge(List<DataInputStream> files, String outputFile, int blocksize) throws IOException {
     	
         PriorityQueue<DataManager> queue = new PriorityQueue<>(files.size(), new Comparator<DataManager>() {
                     public int compare(DataManager o1, DataManager o2) { 
