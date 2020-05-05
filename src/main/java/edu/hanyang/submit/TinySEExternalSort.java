@@ -165,14 +165,15 @@ public class TinySEExternalSort implements ExternalSort {
         // initial run 생성해서 quick sort 정렬까지 완료! 2) n-way merge만 구현하면 됨!
 
         // 2) n-way merge
-        _externalMergeSort(tmpDir, outfile, nblocks, blocksize, 0);
+        _externalMergeSort(tmpDir, outfile, nblocks, blocksize, 1);
     }
 
     private void _externalMergeSort(String tmpDir, String outputFile, int nblocks, int blocksize, int step) throws IOException{
-        String prevStep = "run" + (step);
+        String prevStep = "run" + (step-1);
         File[] fileArr = (new File(tmpDir + File.separator + String.valueOf(prevStep))).listFiles();
         ArrayList<File> fileList = new ArrayList<>();
-
+        int cnt=0;
+        
         if(fileArr.length <= nblocks - 1){
         	for(File f : fileArr) {
             	fileList.add(f);
@@ -186,12 +187,30 @@ public class TinySEExternalSort implements ExternalSort {
         	for (File f : fileArr) { // (nblocks-1)개 될때마다 n_way merge
         		fileList.add(f);
         		if(fileList.size() == nblocks-1) {
+        			
+        			String runDir = tmpDir + File.separator + "pass" + step + File.separator + cnt + ".data";
+        			File file = new File(runDir);
+        			if (!file.getParentFile().exists()) {
+                        file.getParentFile().mkdir();
+                    }
+                    file.createNewFile();
+                    cnt++;
+        			
         			n_way_merge(fileList, outputFile, blocksize);
         			fileList.clear();
         		}
         	}
         	
         	if(fileList.size()>0) {// 이제 (nblocks-1)개보다 적은 나머지 n_way_merge
+        		
+        		String runDir = tmpDir + File.separator + "pass" + step + File.separator + cnt + ".data";
+    			File file = new File(runDir);
+    			if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdir();
+                }
+                file.createNewFile();
+                cnt++;
+        		
         		n_way_merge(fileList, outputFile, blocksize);
     			fileList.clear();
         	}
