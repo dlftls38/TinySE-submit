@@ -169,21 +169,32 @@ public class TinySEExternalSort implements ExternalSort {
     }
 
     private void _externalMergeSort(String tmpDir, String outputFile, int nblocks, int blocksize, int step) throws IOException{
-        String prevStep = "";
+        String prevStep = "run" + (step);
         File[] fileArr = (new File(tmpDir + File.separator + String.valueOf(prevStep))).listFiles();
-
+        ArrayList<File> fileList = new ArrayList<>();
 
         if(fileArr.length <= nblocks - 1){
-        	n_way_merge(fileArr, outputFile, blocksize);
+        	for(File f : fileArr) {
+            	fileList.add(f);
+            }
+        	n_way_merge(fileList, outputFile, blocksize);
         	for (File f : fileArr) {
                 f.delete();
             }
         }
         else{
-        	// nblocks-1 될때마다 n_way merge
+        	for (File f : fileArr) { // (nblocks-1)개 될때마다 n_way merge
+        		fileList.add(f);
+        		if(fileList.size() == nblocks-1) {
+        			n_way_merge(fileList, outputFile, blocksize);
+        			fileList.clear();
+        		}
+        	}
         	
-        	
-        	// 나머지 n_way_merge
+        	if(fileList.size()>0) {// 이제 (nblocks-1)개보다 적은 나머지 n_way_merge
+        		n_way_merge(fileList, outputFile, blocksize);
+    			fileList.clear();
+        	}
         	
         	for (File f : fileArr) {
                 f.delete();
@@ -192,9 +203,9 @@ public class TinySEExternalSort implements ExternalSort {
         }
     }
 
-    public void n_way_merge(File[] files, String outputFile, int blocksize) throws IOException {
+    public void n_way_merge(ArrayList<File> files, String outputFile, int blocksize) throws IOException {
     	
-        PriorityQueue<DataManager> queue = new PriorityQueue<>(files.length, new Comparator<DataManager>() {
+        PriorityQueue<DataManager> queue = new PriorityQueue<>(files.size(), new Comparator<DataManager>() {
                     public int compare(DataManager o1, DataManager o2) { 
                         return o1.tuple.compareTo(o2.tuple);
                     }
