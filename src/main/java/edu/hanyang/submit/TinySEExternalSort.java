@@ -121,11 +121,6 @@ public class TinySEExternalSort implements ExternalSort {
         DataManager dm = new DataManager();
         dm.openDis(infile, blocksize);
         
-        //=============================================
-    	// 이거 before 왜 쓴거임????
-    	//=============================================
-
-        int before = dm.dis.available();
         //정렬해야하는 input data를 읽을 수 있을 때까지 읽음
         while(dm.dis.available()!=0){
             ArrayList<MutableTriple<Integer, Integer, Integer>> dataArr = new ArrayList<>(nElement);
@@ -179,46 +174,48 @@ public class TinySEExternalSort implements ExternalSort {
 
 
         if(fileArr.length <= nblocks - 1){
-            for(File f: fileArr){
-                DataInputStream dataInputStream = new DataInputStream(
-                        new BufferedInputStream(
-                                new FileInputStream(f.getAbsolutePath()), blocksize)
-                );
+        	n_way_merge(fileArr, outputFile, blocksize);
+        	for (File f : fileArr) {
+                f.delete();
             }
         }
         else{
-        	int cnt=0;
-        	List<DataInputStream> files = new ArrayList<DataInputStream>();
-            for(File f: fileArr){
-            	DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(f.getAbsolutePath()), blocksize));
-            	files.add(dataInputStream);
-                cnt++;
-                if(cnt == nblocks -1){
-                    n_way_merge(files, outputFile, blocksize);
-                    cnt=0;
-                    files = new ArrayList<DataInputStream>();
-                }
+        	// nblocks-1 될때마다 n_way merge
+        	
+        	
+        	// 나머지 n_way_merge
+        	
+        	for (File f : fileArr) {
+                f.delete();
             }
             _externalMergeSort(tmpDir, outputFile, nblocks, blocksize, step+1);
         }
     }
 
-    public void n_way_merge(List<DataInputStream> files, String outputFile, int blocksize) throws IOException {
+    public void n_way_merge(File[] files, String outputFile, int blocksize) throws IOException {
     	
-        PriorityQueue<DataManager> queue = new PriorityQueue<>(files.size(), new Comparator<DataManager>() {
+        PriorityQueue<DataManager> queue = new PriorityQueue<>(files.length, new Comparator<DataManager>() {
                     public int compare(DataManager o1, DataManager o2) { 
                         return o1.tuple.compareTo(o2.tuple);
                     }
                 });
         
+        for (File f: files) {
+        	DataManager dm = new DataManager();
+        	dm.openDis(f.getAbsolutePath(), blocksize);
+        	queue.add(dm);
+        }
+        
+        DataManager out = new DataManager();
+        out.openDos(outputFile, blocksize);
+        
         while (queue.size() != 0){
         	DataManager dm = queue.poll();
-        	dm.openDos(outputFile, blocksize);
         	MutableTriple<Integer, Integer, Integer> tmp = new MutableTriple<>();
         	dm.getTuple(tmp);
-        	dm.writeNext(tmp);
-        	dm.closeDos();
+        	out.writeNext(tmp);
         }
+        out.closeDos();
     }
 
     class DataManager{
