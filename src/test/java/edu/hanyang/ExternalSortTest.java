@@ -27,10 +27,11 @@ public class ExternalSortTest {
 
 	@Test
 	public void TestSort() throws IOException {
-		int blocksize = 1024;
-		int nblocks = 160;
+		int blocksize = 4096;
+		int nblocks = 1000;
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		File infile = new File(classLoader.getResource("test-10000000.data").getFile());
+//		File infile = new File(classLoader.getResource("test.data").getFile());
 		String outfile = "./tmp/sorted.data";
 		String tmpdir = "./tmp";
 		File resultFile = new File(outfile);
@@ -42,6 +43,7 @@ public class ExternalSortTest {
 
 
 		File answerFile = new File(classLoader.getResource("result-10000000.data").getFile());
+//		File answerFile = new File(classLoader.getResource("answer.data").getFile());
 		DataInputStream resultInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(resultFile)));
 		DataInputStream answerInputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(answerFile)));
 
