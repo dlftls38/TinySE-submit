@@ -79,12 +79,12 @@ public class TinySEExternalSort implements ExternalSort {
         // 1) initial phase
 
         // 메모리에 올릴 수 있는 전체 사이즈 = blocksize * nblocks (= M) / Integer.SIZE
-    	
-    	//=============================================
-    	// 이거 (Integer.SIZE *3) 나눠야 하는거 아님??
-    	//=============================================
-    	
-    	int nElement = blocksize * nblocks / Integer.SIZE;
+       
+       //=============================================
+       // 이거 (Integer.SIZE *3) 나눠야 하는거 아님??
+       //=============================================
+       
+       int nElement = blocksize * nblocks / Integer.SIZE;
 
         //tmp 폴더 생성
         File fileTmpDir = new File(tmpDir);
@@ -138,7 +138,7 @@ public class TinySEExternalSort implements ExternalSort {
             }
             dataArr.sort(null);
 
-            String runDir = tmpDir+File.separator+"run";
+            String runDir = tmpDir+File.separator+"pass0";
             File fileRunDir = new File(runDir);
             if(!fileRunDir.exists()){
                 fileRunDir.mkdir();
@@ -166,64 +166,96 @@ public class TinySEExternalSort implements ExternalSort {
 
         // 2) n-way merge
         _externalMergeSort(tmpDir, outfile, nblocks, blocksize, 1);
+        
+        System.out.println("External Merge Sort Done");
+        System.out.println();
     }
 
     private void _externalMergeSort(String tmpDir, String outputFile, int nblocks, int blocksize, int step) throws IOException{
-        String prevStep = "run" + (step-1);
+        String prevStep = "pass" + (step-1);
         File[] fileArr = (new File(tmpDir + File.separator + String.valueOf(prevStep))).listFiles();
         ArrayList<File> fileList = new ArrayList<>();
         int cnt=0;
         
+        System.out.println();
+        System.out.println("fileArr length = " + fileArr.length);
+        System.out.println("nblocks -1 = " + (nblocks-1));
+        System.out.println();
+        
+        
+        
         if(fileArr.length <= nblocks - 1){
-        	for(File f : fileArr) {
-            	fileList.add(f);
+           
+           for(File f : fileArr) {
+               fileList.add(f);
             }
-        	n_way_merge(fileList, outputFile, blocksize);
-        	for (File f : fileArr) {
+           
+           System.out.println("Merge : "+fileList.size());
+           
+           n_way_merge(fileList, outputFile, blocksize);
+           
+           System.out.println("Merge Done");
+           System.out.println();
+           
+           
+           
+           for (File f : fileArr) {
                 f.delete();
             }
+           
+           
         }
         else{
-        	for (File f : fileArr) { // (nblocks-1)개 될때마다 n_way merge
-        		fileList.add(f);
-        		if(fileList.size() == nblocks-1) {
-        			
-        			String runDir = tmpDir + File.separator + "pass" + step + File.separator + cnt + ".data";
-        			File file = new File(runDir);
-        			if (!file.getParentFile().exists()) {
+           for (File f : fileArr) { // (nblocks-1)개 될때마다 n_way merge
+              fileList.add(f);
+              if(fileList.size() == nblocks-1) {
+                  System.out.println("pass : " + step + "  run : " + cnt);
+                  System.out.println("Merge : "+fileList.size());
+                 
+                 String runDir = tmpDir + File.separator + "pass" + step + File.separator +"run"+cnt + ".data";
+                 File file = new File(runDir);
+                 if (!file.getParentFile().exists()) {
                         file.getParentFile().mkdir();
                     }
                     file.createNewFile();
                     cnt++;
-        			
-        			n_way_merge(fileList, outputFile, blocksize);
-        			fileList.clear();
-        		}
-        	}
-        	
-        	if(fileList.size()>0) {// 이제 (nblocks-1)개보다 적은 나머지 n_way_merge
-        		
-        		String runDir = tmpDir + File.separator + "pass" + step + File.separator + cnt + ".data";
-    			File file = new File(runDir);
-    			if (!file.getParentFile().exists()) {
+                 n_way_merge(fileList, runDir, blocksize);
+                 fileList.clear();
+              }
+           
+              
+           }
+           
+           if(fileList.size()>0) {// 이제 (nblocks-1)개보다 적은 나머지 n_way_merge
+               System.out.println("pass : " + step + "  run : " + cnt);
+               System.out.println("Merge : "+fileList.size());
+               
+              String runDir = tmpDir + File.separator + "pass" + step + File.separator +"run"+ cnt + ".data";
+             File file = new File(runDir);
+             if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdir();
                 }
                 file.createNewFile();
                 cnt++;
-        		
-        		n_way_merge(fileList, outputFile, blocksize);
-    			fileList.clear();
-        	}
-        	
-        	for (File f : fileArr) {
+              
+              n_way_merge(fileList, runDir, blocksize);
+             fileList.clear();
+           }
+           
+           
+           for (File f : fileArr) {
                 f.delete();
             }
             _externalMergeSort(tmpDir, outputFile, nblocks, blocksize, step+1);
         }
+        
     }
 
     public void n_way_merge(ArrayList<File> files, String outputFile, int blocksize) throws IOException {
-    	
+       
+        System.out.println("Merging");
+        System.out.println();
+        
         PriorityQueue<DataManager> queue = new PriorityQueue<>(files.size(), new Comparator<DataManager>() {
                     public int compare(DataManager o1, DataManager o2) { 
                         return o1.tuple.compareTo(o2.tuple);
@@ -231,20 +263,38 @@ public class TinySEExternalSort implements ExternalSort {
                 });
         
         for (File f: files) {
-        	DataManager dm = new DataManager();
-        	dm.openDis(f.getAbsolutePath(), blocksize);
-        	queue.add(dm);
+           try {
+              DataManager dm = new DataManager();
+              dm.openDis(f.getAbsolutePath(), blocksize);
+              dm.readNext();
+              queue.add(dm);
+           } catch (EOFException e) {
+              continue;
+           }
         }
         
         DataManager out = new DataManager();
         out.openDos(outputFile, blocksize);
         
         while (queue.size() != 0){
-        	DataManager dm = queue.poll();
-        	MutableTriple<Integer, Integer, Integer> tmp = new MutableTriple<>();
-        	dm.getTuple(tmp);
-        	out.writeNext(tmp);
+           try {
+              DataManager dm = queue.poll();
+              MutableTriple<Integer, Integer, Integer> tmp = new MutableTriple<>();
+              dm.getTuple(tmp);
+              out.writeNext(tmp);
+              //System.out.println(tmp); //소팅 후
+              out.dos.flush();
+              
+              dm.readNext();
+              
+              
+              queue.add(dm);
+              
+           } catch (EOFException e) {
+              continue;
+           }
         }
+        
         out.closeDos();
     }
 
