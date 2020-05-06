@@ -1,4 +1,3 @@
-
 package edu.hanyang.submit;
 
 import java.io.*;
@@ -78,22 +77,22 @@ public class TinySEExternalSort implements ExternalSort {
 
         // 1) initial phase
 
-        // ë©”ëª¨ë¦¬ì— ì˜¬ë¦´ ìˆ˜ ìˆëŠ” ì „ì²´ ì‚¬ì´ì¦ˆ = blocksize * nblocks (= M) / Integer.SIZE
+        // ¸Ş¸ğ¸®¿¡ ¿Ã¸± ¼ö ÀÖ´Â ÀüÃ¼ »çÀÌÁî = blocksize * nblocks (= M) / Integer.SIZE
         int nElement = blocksize * nblocks / Integer.SIZE / 3;
-        //tmp í´ë” ìƒì„±
+        //tmp Æú´õ »ı¼º
         File fileTmpDir = new File(tmpDir);
         if(!fileTmpDir.exists()){
             fileTmpDir.mkdir();
         }
-        //initial runì˜ ê°œìˆ˜
+        //initial runÀÇ °³¼ö
         int number_of_initial_run=0;
-        //File I/Oì™€ ê°™ì€ ê²ƒë“¤ì„ ì²˜ë¦¬í•  DataManager ì„ ì–¸
+        //File I/O¿Í °°Àº °ÍµéÀ» Ã³¸®ÇÒ DataManager ¼±¾ğ
         DataManager dm = new DataManager();
         dm.openDis(infile, blocksize);
-        //ì •ë ¬í•´ì•¼í•˜ëŠ” input dataë¥¼ ì½ì„ ìˆ˜ ìˆì„ ë•Œê¹Œì§€ ì½ìŒ
+        //Á¤·ÄÇØ¾ßÇÏ´Â input data¸¦ ÀĞÀ» ¼ö ÀÖÀ» ¶§±îÁö ÀĞÀ½
         while(dm.dis.available()!=0){
             ArrayList<MutableTriple<Integer, Integer, Integer>> dataArr = new ArrayList<>(nElement);
-            //ì‚¬ìš© í•  ìˆ˜ ìˆëŠ” ë©”ëª¨ë¦¬ í¬ê¸°ì— ë”°ë¥¸, ë©”ëª¨ë¦¬ì— ì˜¬ë¦´ ìˆ˜ ìˆëŠ” elementì˜ ìˆ˜ = nElement ë§Œí¼ ë°ì´í„°ë¥¼ ì½ì–´ ë“¤ì„
+            //»ç¿ë ÇÒ ¼ö ÀÖ´Â ¸Ş¸ğ¸® Å©±â¿¡ µû¸¥, ¸Ş¸ğ¸®¿¡ ¿Ã¸± ¼ö ÀÖ´Â elementÀÇ ¼ö = nElement ¸¸Å­ µ¥ÀÌÅÍ¸¦ ÀĞ¾î µéÀÓ
             for(int i=0; i<nElement; i++){
                 try{
                     MutableTriple<Integer, Integer, Integer> tuple = new MutableTriple<>();
@@ -112,7 +111,7 @@ public class TinySEExternalSort implements ExternalSort {
             }
             String initial_run = runDir+File.separator+"run"+ number_of_initial_run +".data";
             File fileInitialRun = new File(initial_run);
-            //initial run ìƒì„±í•˜ê¸°
+            //initial run »ı¼ºÇÏ±â
             fileInitialRun.createNewFile();
             dm.openDos(initial_run, blocksize);
             for (MutableTriple<Integer, Integer, Integer> curData : dataArr) {
@@ -125,9 +124,9 @@ public class TinySEExternalSort implements ExternalSort {
             number_of_initial_run++;
             dm.closeDos();
         }
-        // File cursor ë‹«ê¸°
+        // File cursor ´İ±â
         dm.closeDis();
-        // initial run ìƒì„±í•´ì„œ quick sort ì •ë ¬ê¹Œì§€ ì™„ë£Œ! 2) n-way mergeë§Œ êµ¬í˜„í•˜ë©´ ë¨!
+        // initial run »ı¼ºÇØ¼­ quick sort Á¤·Ä±îÁö ¿Ï·á! 2) n-way merge¸¸ ±¸ÇöÇÏ¸é µÊ!
         // 2) n-way merge
         _externalMergeSort(tmpDir, outfile, nblocks, blocksize, 1);
         System.out.println("External Merge Sort Done");
@@ -138,7 +137,7 @@ public class TinySEExternalSort implements ExternalSort {
         String prevStep = "pass" + (step-1);
         File[] fileArr = (new File(tmpDir + File.separator + String.valueOf(prevStep))).listFiles();
         ArrayList<File> fileList = new ArrayList<>();
-        int cnt=0;
+        int number_of_run=0;
         String passDirpath = tmpDir + File.separator + "pass" + step;
         File passDir = new File(passDirpath);
         if (!passDir.exists()) {
@@ -146,7 +145,8 @@ public class TinySEExternalSort implements ExternalSort {
         }
 
         System.out.println();
-        System.out.println("fileArr length = " + fileArr.length);
+        System.out.println("====================================================");
+        System.out.println("step" + step + " # of runs = " + fileArr.length);
         System.out.println("nblocks -1 = " + (nblocks-1));
         System.out.println();
         
@@ -166,28 +166,28 @@ public class TinySEExternalSort implements ExternalSort {
            
         }
         else{
-           for (File f : fileArr) { // (nblocks-1)ê°œ ë ë•Œë§ˆë‹¤ n_way merge
+           for (File f : fileArr) { // (nblocks-1)°³ µÉ¶§¸¶´Ù n_way merge
               fileList.add(f);
               if(fileList.size() == nblocks-1) {
-                  System.out.println("pass : " + step + "  run : " + cnt);
-                  System.out.println("Merge : "+fileList.size());
+                 System.out.print("pass : " + step + "  run : " + number_of_run);
+                  System.out.print(" Merge : "+fileList.size());
                  
-                 String runpath = passDirpath + File.separator + "run" + cnt + ".data";
+                 String runpath = passDirpath + File.separator + "run" + number_of_run + ".data";
                  File runfile = new File(runpath);
                  runfile.createNewFile();
-                 cnt++;
+                 number_of_run++;
                  n_way_merge(fileList, runpath, blocksize);
                  fileList.clear();
               }
            }
-           if(fileList.size()>0) {// ì´ì œ (nblocks-1)ê°œë³´ë‹¤ ì ì€ ë‚˜ë¨¸ì§€ n_way_merge
-               System.out.println("pass : " + step + "  run : " + cnt);
-               System.out.println("Merge : "+fileList.size());
+           if(fileList.size()>0) {// ÀÌÁ¦ (nblocks-1)°³º¸´Ù ÀûÀº ³ª¸ÓÁö n_way_merge
+              System.out.print("pass : " + step + "  run : " + number_of_run);
+               System.out.print(" Merge : "+fileList.size());
 
-               String runpath = passDirpath + File.separator + "run" + cnt + ".data";
+               String runpath = passDirpath + File.separator + "run" + number_of_run + ".data";
                File runfile = new File(runpath);
                runfile.createNewFile();
-               cnt++;
+               number_of_run++;
                n_way_merge(fileList, runpath, blocksize);
                fileList.clear();
            }
@@ -197,8 +197,7 @@ public class TinySEExternalSort implements ExternalSort {
 
     public void n_way_merge(ArrayList<File> files, String outputFile, int blocksize) throws IOException {
        
-        System.out.println("Merging");
-        System.out.println();
+        System.out.println(" [Merging]");
         
         PriorityQueue<DataManager> queue = new PriorityQueue<>(files.size(), new Comparator<DataManager>() {
                     public int compare(DataManager o1, DataManager o2) { 
@@ -228,7 +227,7 @@ public class TinySEExternalSort implements ExternalSort {
               q_dm.readNext();
               queue.add(q_dm);
            } catch (EOFException e) {
-               q_dm.closeDis();
+              q_dm.closeDis();
            }
         }
         out.closeDos();
