@@ -8,71 +8,7 @@ import edu.hanyang.utils.DiskIO;
 import org.apache.commons.lang3.tuple.MutableTriple;
 
 public class TinySEExternalSort implements ExternalSort {
-
-    public static void main(String[] args)  throws IOException{
-        String input_path = "C:/Users/charl/TinySE-submit/target/test-classes/test.data";
-
-        System.out.println("----------test.data----------");
-        DataInputStream dataInputStream = new DataInputStream(
-                new BufferedInputStream(
-                        new FileInputStream(input_path), 1024)
-        );
-        for(int i=0;i<15;i++){
-            System.out.print(i + ": (");
-            for(int j=0;j<3;j++){
-                int data = dataInputStream.readInt();
-                System.out.print(data);
-                if(j!=2){
-                    System.out.print(", ");
-                }
-            }
-            System.out.println(")");
-        }
-        dataInputStream.close();
-
-
-        String sorted_path = "C:/Users/charl/TinySE-submit/tmp/sorted.data";
-
-        System.out.println("----------sorted.data----------");
-        DataInputStream dataInputStream2 = new DataInputStream(
-                new BufferedInputStream(
-                        new FileInputStream(sorted_path), 1024)
-        );
-        for(int i=0;i<15;i++){
-            System.out.print(i + ": (");
-            for(int j=0;j<3;j++){
-                int data = dataInputStream2.readInt();
-                System.out.print(data);
-                if(j!=2){
-                    System.out.print(", ");
-                }
-            }
-            System.out.println(")");
-        }
-        dataInputStream2.close();
-
-
-        String run_path = "C:/Users/charl/TinySE-submit/tmp/run/0.data";
-
-        System.out.println("----------/run/0.data----------");
-        DataInputStream dataInputStream3 = new DataInputStream(
-                new BufferedInputStream(
-                        new FileInputStream(run_path), 1024)
-        );
-        for(int i=0;i<15;i++){
-            System.out.print(i + ": (");
-            for(int j=0;j<3;j++){
-                int data = dataInputStream3.readInt();
-                System.out.print(data);
-                if(j!=2){
-                    System.out.print(", ");
-                }
-            }
-            System.out.println(")");
-        }
-        dataInputStream3.close();
-    }
-
+   
     public void sort(String infile, String outfile, String tmpDir, int blocksize, int nblocks) throws IOException {
 
         // 1) initial phase
@@ -90,18 +26,19 @@ public class TinySEExternalSort implements ExternalSort {
         DataManager dm = new DataManager();
         dm.openDis(infile, blocksize);
         //정렬해야하는 input data를 읽을 수 있을 때까지 읽음
+        MutableTriple<Integer, Integer, Integer> tuple = new MutableTriple<>();
         while(dm.dis.available()!=0){
             ArrayList<MutableTriple<Integer, Integer, Integer>> dataArr = new ArrayList<>(nElement);
             //사용 할 수 있는 메모리 크기에 따른, 메모리에 올릴 수 있는 element의 수 = nElement 만큼 데이터를 읽어 들임
             for(int i=0; i<nElement; i++){
                 try{
-                    MutableTriple<Integer, Integer, Integer> tuple = new MutableTriple<>();
                     dm.readNext();
                     dm.getTuple(tuple);
                     dataArr.add(tuple);
                 }catch (EOFException e) {
                     break;
                 }
+            tuple = new MutableTriple<>();
             }
             dataArr.sort(null);
             String runDir = tmpDir+File.separator+"pass0";
@@ -129,8 +66,10 @@ public class TinySEExternalSort implements ExternalSort {
         // initial run 생성해서 quick sort 정렬까지 완료! 2) n-way merge만 구현하면 됨!
         // 2) n-way merge
         _externalMergeSort(tmpDir, outfile, nblocks, blocksize, 1);
+        /*
         System.out.println("External Merge Sort Done");
         System.out.println();
+        */
     }
 
     private void _externalMergeSort(String tmpDir, String outputFile, int nblocks, int blocksize, int step) throws IOException{
@@ -143,13 +82,13 @@ public class TinySEExternalSort implements ExternalSort {
         if (!passDir.exists()) {
             passDir.mkdir();
         }
-
+        /*
         System.out.println();
         System.out.println("====================================================");
         System.out.println("step" + step + " # of runs = " + fileArr.length);
         System.out.println("nblocks -1 = " + (nblocks-1));
         System.out.println();
-        
+        */
 
         if(fileArr.length <= nblocks - 1){
            
@@ -157,21 +96,22 @@ public class TinySEExternalSort implements ExternalSort {
                fileList.add(f);
             }
            
-           System.out.println("Merge : "+fileList.size());
+           //System.out.println("Merge : "+fileList.size());
            
            n_way_merge(fileList, outputFile, blocksize);
-           
+           /*
            System.out.println("Merge Done");
            System.out.println();
-           
+           */
         }
         else{
            for (File f : fileArr) { // (nblocks-1)개 될때마다 n_way merge
               fileList.add(f);
               if(fileList.size() == nblocks-1) {
+                 /*
                  System.out.print("pass : " + step + "  run : " + number_of_run);
-                  System.out.print(" Merge : "+fileList.size());
-                 
+                 System.out.print(" Merge : "+fileList.size());
+                 */
                  String runpath = passDirpath + File.separator + "run" + number_of_run + ".data";
                  File runfile = new File(runpath);
                  runfile.createNewFile();
@@ -181,9 +121,10 @@ public class TinySEExternalSort implements ExternalSort {
               }
            }
            if(fileList.size()>0) {// 이제 (nblocks-1)개보다 적은 나머지 n_way_merge
+              /*
               System.out.print("pass : " + step + "  run : " + number_of_run);
                System.out.print(" Merge : "+fileList.size());
-
+               */
                String runpath = passDirpath + File.separator + "run" + number_of_run + ".data";
                File runfile = new File(runpath);
                runfile.createNewFile();
@@ -197,7 +138,7 @@ public class TinySEExternalSort implements ExternalSort {
 
     public void n_way_merge(ArrayList<File> files, String outputFile, int blocksize) throws IOException {
        
-        System.out.println(" [Merging]");
+        //System.out.println(" [Merging]");
         
         PriorityQueue<DataManager> queue = new PriorityQueue<>(files.size(), new Comparator<DataManager>() {
                     public int compare(DataManager o1, DataManager o2) { 
@@ -218,10 +159,10 @@ public class TinySEExternalSort implements ExternalSort {
         DataManager out = new DataManager();
         DataManager q_dm = new DataManager();
         out.openDos(outputFile, blocksize);
+        MutableTriple<Integer, Integer, Integer> tmp = new MutableTriple<>();
         while (queue.size() != 0){
            try {
               q_dm = queue.poll();
-              MutableTriple<Integer, Integer, Integer> tmp = new MutableTriple<>();
               q_dm.getTuple(tmp);
               out.writeNext(tmp);
               q_dm.readNext();
