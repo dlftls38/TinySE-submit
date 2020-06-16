@@ -16,13 +16,51 @@ public class TinySEQueryProcess implements QueryProcess {
 	public void op_and_w_pos(DocumentCursor op1, DocumentCursor op2, int shift, IntermediatePositionalList out)
 			throws IOException {
 		// TODO Auto-generated method stub
-		
+		while (!op1.is_eol() && !op2.is_eol()){
+			if (op1.get_docid() < op2.get_docid()){
+				op1.go_next();
+			}
+			else if (op1.get_docid() > op2.get_docid()){
+				op2.go_next();
+			}
+			else{
+				PositionCursor positionCursor1 = op1.get_position_cursor();
+				PositionCursor positionCursor2 = op2.get_position_cursor();
+				while (!positionCursor1.is_eol() && !positionCursor2.is_eol()) {
+					if (positionCursor1.get_pos() + shift < positionCursor2.get_pos()){
+						positionCursor1.go_next();
+					}
+					else if (positionCursor1.get_pos() + shift > positionCursor2.get_pos()){
+						positionCursor2.go_next();
+					}
+					else {
+						out.put_docid_and_pos(op1.get_docid(), positionCursor1.get_pos());
+						positionCursor1.go_next();
+						positionCursor2.go_next();
+					}
+				}
+				op1.go_next();
+				op2.go_next();
+			}
+		}
 	}
 	
 	@Override
 	public void op_and_wo_pos(DocumentCursor op1, DocumentCursor op2, IntermediateList out) throws IOException {
 		// TODO Auto-generated method stub
-		
+		while (!op1.is_eol() && !op2.is_eol()){
+			if (op1.get_docid() < op2.get_docid()){
+				op1.go_next();
+			}
+			else if (op1.get_docid() > op2.get_docid()){
+				op2.go_next();
+			}
+			else {
+				out.put_docid(op1.get_docid());
+				op1.go_next();
+				op2.go_next();
+			}
+		}
 	}
 
 	@Override

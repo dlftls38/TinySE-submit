@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 import edu.hanyang.submit.TinySEBPlusTree;
 
-// @Ignore("Delete this line to unit test stage 3")
+ @Ignore("Delete this line to unit test stage 3")
 public class BPlusTreeTest {
 
 	@Test
@@ -111,7 +111,8 @@ public class BPlusTreeTest {
 
 		TinySEBPlusTree tree = new TinySEBPlusTree();
 		tree.open(metapath, savepath, blocksize, nblocks);
-
+		int count = 0;
+		int max = 1000000;
 		long startTime = System.currentTimeMillis();
 		try (DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(this.getClass().getClassLoader().getResource("stage3-15000000.data").getFile())))) {
 			while (in.available() > 0) {
@@ -119,6 +120,10 @@ public class BPlusTreeTest {
 				int addr = in.readInt();
 
 				tree.insert(termid, addr);
+				count ++;
+				if(count==max){
+					break;
+				}
 			}
 		} catch (IOException exc) {
 			exc.printStackTrace();
@@ -134,12 +139,17 @@ public class BPlusTreeTest {
 		tree.open(metapath, savepath, blocksize, nblocks);
 
 		startTime = System.currentTimeMillis();
+		count=0;
 		try (DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(this.getClass().getClassLoader().getResource("stage3-15000000.data").getFile())))) {
 			while (in.available() > 0) {
 				int termid = in.readInt();
 				int addr = in.readInt();
 
 				assertEquals(tree.search(termid), addr);
+				count ++;
+				if(count==max){
+					break;
+				}
 			}
 		} catch (IOException exc) {
 			exc.printStackTrace();
